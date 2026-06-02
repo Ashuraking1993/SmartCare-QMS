@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="QSmart.API/QSmart.API.csproj" />
+  <Project Path="QSmart.Application/QSmart.Application.csproj" />
+  <Project Path="QSmart.Domain/QSmart.Domain.csproj" />
+  <Project Path="QSmart.Infrastructure/QSmart.Infrastructure.csproj" />
+  <Project Path="QSmart.Persistence/QSmart.Persistence.csproj" />
+</Solution>

@@ -1,0 +1,78 @@
+.print-ticket {
+  width: 80mm;
+  padding: 10px;
+  background: white;
+  color: black;
+  font-family: Arial, sans-serif;
+}
+
+.ticket-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+
+  margin-bottom: 20px;
+}
+
+.ticket-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.ticket-bank-name {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ticket-number {
+  text-align: center;
+  font-size: 90px;
+  font-weight: 900;
+  margin: 20px 0;
+}
+
+.ticket-service {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.ticket-waiting {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+
+.print-only {
+  display: none;
+}
+
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    display: block;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  .ticket-modal {
+    display: none !important;
+  }
+}

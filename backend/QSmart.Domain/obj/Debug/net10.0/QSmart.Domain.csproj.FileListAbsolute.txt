@@ -1,0 +1,11 @@
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\bin\Debug\net10.0\QSmart.Domain.deps.json
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\bin\Debug\net10.0\QSmart.Domain.dll
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\bin\Debug\net10.0\QSmart.Domain.pdb
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\QSmart.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\QSmart.Domain.AssemblyInfoInputs.cache
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\QSmart.Domain.AssemblyInfo.cs
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\QSmart.Domain.csproj.CoreCompileInputs.cache
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\QSmart.Domain.dll
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\refint\QSmart.Domain.dll
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\QSmart.Domain.pdb
+D:\Projects\Smart_AI_QMS\backend\QSmart.Domain\obj\Debug\net10.0\ref\QSmart.Domain.dll
