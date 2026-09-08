@@ -20,9 +20,9 @@ function TicketPrint({
             />
 
         <div className="ticket-bank-name">
-          BANKO DE
+         SMART CARE
           <br />
-          FILIPINO
+         HOSPITAL
         </div>
       </div>
 

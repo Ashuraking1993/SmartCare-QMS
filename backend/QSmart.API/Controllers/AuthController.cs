@@ -49,7 +49,7 @@ public class AuthController : ControllerBase
                     request.Password),
 
             RoleId = Guid.Parse(
-                "11111111-1111-1111-1111-111111111111"),
+            "44444444-4444-4444-4444-444444444444"),
 
             BranchId = request.BranchId,
 
@@ -107,5 +107,31 @@ public class AuthController : ControllerBase
         FirstName = user.FirstName,
         LastName = user.LastName
     });
-}
+
+    
+    }
+
+    [HttpPost("reset-admin")]
+    public async Task<IActionResult> ResetAdminPassword()
+    {
+        var admin =
+            await _userRepository
+                .GetByEmailAsync("admin@smartcare.com");
+
+        if (admin == null)
+        {
+            return NotFound("Admin account not found.");
+        }
+
+        admin.PasswordHash =
+            _passwordHasher.Hash("Admin123!");
+
+        await _userRepository.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Admin password reset successfully.",
+            email = "admin@smartcare.com"
+        });
+    }
 }

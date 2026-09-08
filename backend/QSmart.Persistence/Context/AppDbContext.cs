@@ -26,6 +26,12 @@ public class AppDbContext : DbContext
 
     public DbSet<QueueService> QueueServices { get; set; }
 
+    public DbSet<Doctor> Doctors => Set<Doctor>();
+
+    public DbSet<DoctorAvailability> DoctorAvailabilities
+    => Set<DoctorAvailability>();
+    public DbSet<Appointment> Appointments { get; set; }
+
 
     protected override void OnModelCreating(
     ModelBuilder modelBuilder)
@@ -61,6 +67,12 @@ public class AppDbContext : DbContext
     .OnDelete(DeleteBehavior.NoAction);
 
     modelBuilder.Entity<QueueTicket>()
+    .HasOne(x => x.User)
+    .WithMany()
+    .HasForeignKey(x => x.UserId)
+    .OnDelete(DeleteBehavior.SetNull);
+
+    modelBuilder.Entity<QueueTicket>()
         .HasOne(x => x.Branch)
         .WithMany()
         .HasForeignKey(x => x.BranchId)
@@ -81,16 +93,30 @@ public class AppDbContext : DbContext
     {
         Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
         Name = "Teller"
+    },
+     new Role
+    {
+        Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+        Name = "Patient"
     }
     );
 
     modelBuilder.Entity<Branch>().HasData(
         new Branch
-        {
-            Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-            Name = "Main Branch",
-            Code = "MAIN",
-            IsActive = true
+        { Id = Guid.Parse(
+        "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+
+            Name = "SmartCare Medical Center - Manila",
+            Code = "SC-MNL",
+            IsActive = true,
+
+            Address = "Demo Hospital Location - Manila",
+            City = "Manila",
+
+            Latitude = 14.5995,
+            Longitude = 120.9842,
+
+            ContactNumber = "Demo Contact"
         });
 
     modelBuilder.Entity<Counter>().HasData(
@@ -101,6 +127,80 @@ public class AppDbContext : DbContext
         BranchId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
         IsActive = true
     });
+
+    // ================= QUEUE SERVICES =================
+
+modelBuilder.Entity<QueueService>().HasData(
+    new QueueService
+    {
+        Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
+        Name = "General Consultation",
+        Prefix = "G",
+        IsPriority = false,
+        IsActive = true
+    },
+    new QueueService
+    {
+        Id = Guid.Parse("10000000-0000-0000-0000-000000000002"),
+        Name = "Emergency",
+        Prefix = "E",
+        IsPriority = true,
+        IsActive = true
+    },
+    new QueueService
+    {
+        Id = Guid.Parse("10000000-0000-0000-0000-000000000003"),
+        Name = "Specialist",
+        Prefix = "S",
+        IsPriority = false,
+        IsActive = true
+    },
+    new QueueService
+    {
+        Id = Guid.Parse("10000000-0000-0000-0000-000000000004"),
+        Name = "Laboratory",
+        Prefix = "L",
+        IsPriority = false,
+        IsActive = true
+    },
+    new QueueService
+    {
+        Id = Guid.Parse("10000000-0000-0000-0000-000000000005"),
+        Name = "Dental Care",
+        Prefix = "D",
+        IsPriority = false,
+        IsActive = true
+    },
+    new QueueService
+    {
+        Id = Guid.Parse("10000000-0000-0000-0000-000000000006"),
+        Name = "Other Services",
+        Prefix = "O",
+        IsPriority = false,
+        IsActive = true
+    }
+    );
+
+    // ================= DOCTOR RELATIONSHIPS =================
+
+    modelBuilder.Entity<Doctor>()
+        .HasOne(x => x.Branch)
+        .WithMany()
+        .HasForeignKey(x => x.BranchId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+    modelBuilder.Entity<Doctor>()
+        .HasOne(x => x.Service)
+        .WithMany()
+        .HasForeignKey(x => x.ServiceId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+    modelBuilder.Entity<DoctorAvailability>()
+        .HasOne(x => x.Doctor)
+        .WithMany(x => x.Availabilities)
+        .HasForeignKey(x => x.DoctorId)
+        .OnDelete(DeleteBehavior.Cascade);
+        
        
     }
 

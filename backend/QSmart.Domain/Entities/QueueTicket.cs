@@ -28,9 +28,15 @@ public class QueueTicket
 
     public DateTime? CompletedAt { get; set; }
 
+    public DateTime? CancelledAt { get; set; }
+
     public int Number { get; set; }
 
     public Guid ServiceId { get; set; }
 
     public QueueService? Service { get; set; }
+
+     public Guid? UserId { get; set; }
+
+    public User? User { get; set; }
 }

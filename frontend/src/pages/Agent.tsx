@@ -8,6 +8,11 @@ export default function Agent() {
   const [waitingCount, setWaitingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const navigate = useNavigate();
+  const [toast, setToast] = useState<{
+        message: string;
+        type: "error" | "success" | "warning";
+      } | null>(null);
+
 
   const token = localStorage.getItem("token");
   if (!token) {
@@ -48,29 +53,72 @@ export default function Agent() {
     return () => clearInterval(interval);
   }, []);
 
-  const callNext = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5025/api/Queue/next",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        alert("No waiting tickets");
-        return;
+const callNext = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      "http://localhost:5025/api/Queue/next",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
+
+    // May current patient pa
+    if (response.status === 409) {
       const data = await response.json();
-      setNowServing(data.ticketNumber);
-      loadDashboard();
-    } catch (error) {
-      console.error(error);
+
+      showToast(
+        data.message ||
+          "Please complete the current ticket before calling the next patient.",
+        "warning"
+      );
+
+      return;
     }
-  };
+
+    // Walang waiting
+    if (response.status === 404) {
+      showToast(
+        "No waiting patients in the queue.",
+        "warning"
+      );
+
+      return;
+    }
+
+    if (!response.ok) {
+      showToast(
+        "Unable to call the next patient. Please try again.",
+        "error"
+      );
+
+      return;
+    }
+
+    const data = await response.json();
+
+    setNowServing(data.ticketNumber);
+
+    showToast(
+      `Ticket ${data.ticketNumber} is now being served.`,
+      "success"
+    );
+
+    loadDashboard();
+
+  } catch (error) {
+    console.error(error);
+
+    showToast(
+      "Unable to connect to the server.",
+      "error"
+    );
+  }
+};
 
   const completeTicket = async () => {
     try {
@@ -103,8 +151,49 @@ export default function Agent() {
     window.location.href = "/agent-login";
   };
 
+  const showToast = (
+  message: string,
+  type: "error" | "success" | "warning" = "error"
+) => {
+  setToast({ message, type });
+
+  setTimeout(() => {
+    setToast(null);
+  }, 3500);
+};
+
   return (
     <div className="agent-page">
+        {toast && (
+  <div className={`agent-toast ${toast.type}`}>
+    <div className="agent-toast-icon">
+      {toast.type === "success"
+        ? "✓"
+        : toast.type === "warning"
+        ? "!"
+        : "×"}
+    </div>
+
+    <div className="agent-toast-content">
+      <span className="agent-toast-title">
+        {toast.type === "success"
+          ? "Success"
+          : toast.type === "warning"
+          ? "Action Required"
+          : "Error"}
+      </span>
+
+      <p>{toast.message}</p>
+    </div>
+
+    <button
+      className="agent-toast-close"
+      onClick={() => setToast(null)}
+    >
+      ×
+    </button>
+  </div>
+)}
 
       {/* Watermark */}
       <img src={logo} alt="" className="agent-bg-logo" />
@@ -131,7 +220,7 @@ export default function Agent() {
         <div className="agent-top-header">
           <img src={logo} alt="Logo" className="agent-logo" />
           <div className="agent-header-brand">
-            <h1>BANKO DE FILIPINO</h1>
+            <h1>SMART CARE</h1>
             <span>{counterName}</span>
           </div>
         </div>
@@ -171,5 +260,6 @@ export default function Agent() {
       </div>
 
     </div>
+    
   );
 }

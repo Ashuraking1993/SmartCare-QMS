@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
+using QSmart.Infrastructure.MachineLearning;
 
 
 
@@ -82,10 +83,19 @@ builder.Services.AddControllers()
     });
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IQueueRepository,QueueRepository>();
+builder.Services.AddScoped<IQueueRepository, QueueRepository>();
+
+builder.Services.AddScoped<QueueMLService>();
+builder.Services.AddScoped<IQueuePredictionService, QueuePredictionService>();
+
 builder.Services.AddScoped<IBranchRepository, BranchRepository>();
 builder.Services.AddScoped<ICounterRepository, CounterRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IQueueRepository, QueueRepository>();
+builder.Services.AddScoped<
+    IAppointmentRepository,
+    AppointmentRepository>();
+
 
 var jwtKey =
     builder.Configuration["Jwt:Key"];
@@ -118,7 +128,7 @@ builder.Services
 builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 

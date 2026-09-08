@@ -3,7 +3,6 @@ import logo from "../assets/logo.png";
 import { useState, useEffect } from "react";
 
 export default function Display() {
-
   const [currentTime, setCurrentTime] = useState("");
 
   const [serving, setServing] = useState<any[]>([]);
@@ -13,15 +12,15 @@ export default function Display() {
   const [fadeIn, setFadeIn] = useState(true);
 
   const messages = [
-    "HELLO WELCOME",
-    "MAGANDANG ARAW",
-    "ᜋᜄᜈ᜔ᜇᜅ᜔ ᜀᜇᜏ᜔",
-    "TRUST • SERVICE • PROGRESS",
+    "WELCOME TO SMARTCARE HOSPITAL",
+    "YOUR HEALTH, OUR PRIORITY",
+    "SMARTER QUEUES • BETTER CARE",
+    "PLEASE WAIT FOR YOUR NUMBER",
   ];
 
-  // Clock
+  // ================= CLOCK =================
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateClock = () => {
       setCurrentTime(
         new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
@@ -29,96 +28,224 @@ export default function Display() {
           second: "2-digit",
         })
       );
-    }, 1000);
+    };
+
+    updateClock();
+
+    const timer = setInterval(updateClock, 1000);
+
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch display data
+  // ================= FETCH DISPLAY DATA =================
   useEffect(() => {
     const loadDisplay = async () => {
       try {
         const response = await fetch(
           "http://localhost:5025/api/Queue/display"
         );
+
+        if (!response.ok) {
+          throw new Error(`Display request failed (${response.status})`);
+        }
+
         const data = await response.json();
-        setServing(data.serving);
-        setUpNext(data.upNext);
-        setWaitingCount(data.waitingCount);
+
+        setServing(data.serving ?? []);
+        setUpNext(data.upNext ?? []);
+        setWaitingCount(data.waitingCount ?? 0);
       } catch (error) {
-        console.error(error);
+        console.error("Failed to load queue display:", error);
       }
     };
+
     loadDisplay();
+
     const interval = setInterval(loadDisplay, 3000);
+
     return () => clearInterval(interval);
   }, []);
 
-  // Rotating message with fade
+  // ================= ROTATING MESSAGE =================
   useEffect(() => {
     const interval = setInterval(() => {
       setFadeIn(false);
+
       setTimeout(() => {
         setMessageIndex((prev) => (prev + 1) % messages.length);
         setFadeIn(true);
       }, 500);
     }, 3200);
+
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="display-page">
 
-      {/* Watermark */}
-      <img src={logo} className="display-bg-logo" alt="" />
+      {/* ================= WATERMARK ================= */}
+      <img
+        src={logo}
+        className="display-bg-logo"
+        alt=""
+      />
 
-      {/* Top Header Bar */}
+      {/* ================= HEADER ================= */}
       <div className="display-header">
-        <img src={logo} className="display-logo" alt="" />
-        <h1 className="display-brand">BANKO DE FILIPINO</h1>
-        <div className="display-clock">{currentTime}</div>
+
+        <div className="display-brand-wrap">
+          <img
+            src={logo}
+            className="display-logo"
+            alt="SmartCare Hospital"
+          />
+
+          <div>
+            <h1 className="display-brand">
+              SMART<span>CARE</span>
+            </h1>
+
+            <small className="display-hospital">
+              HOSPITAL
+            </small>
+          </div>
+        </div>
+
+        <div className="display-clock">
+          {currentTime}
+        </div>
+
       </div>
 
-      {/* Divider */}
       <div className="display-divider" />
 
-      {/* Rotating Message Banner */}
+      {/* ================= MESSAGE ================= */}
       <div className="display-message-banner">
-        <span className={`display-message-text ${fadeIn ? "fade-in" : "fade-out"}`}>
+        <span
+          className={`display-message-text ${
+            fadeIn ? "fade-in" : "fade-out"
+          }`}
+        >
           {messages[messageIndex]}
         </span>
       </div>
 
-      {/* Main Body */}
+      {/* ================= MAIN ================= */}
       <div className="display-body">
 
-        {/* Counter Cards */}
-        <div className="counter-grid">
-          {serving.map((item, index) => (
-            <div key={index} className="counter-card">
-              <p className="counter-label">COUNTER {index + 1}</p>
-              <div className="ticket-number">{item.ticketNumber}</div>
+        {/* NOW SERVING */}
+        <div className="counter-section">
+
+          <div className="display-section-heading">
+            <span className="section-dot" />
+
+            <div>
+              <small>LIVE QUEUE</small>
+              <h2>Now Serving</h2>
             </div>
-          ))}
+          </div>
+
+          <div className="counter-grid">
+
+            {serving.length > 0 ? (
+              serving.map((item, index) => (
+                <div
+                  key={index}
+                  className="counter-card"
+                >
+                  <p className="counter-label">
+                    COUNTER {index + 1}
+                  </p>
+
+                  <div className="ticket-number">
+                    {item.ticketNumber}
+                  </div>
+
+                  <span className="serving-status">
+                    ● NOW SERVING
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="counter-card empty-counter">
+                <p className="counter-label">
+                  NOW SERVING
+                </p>
+
+                <div className="ticket-number">
+                  ---
+                </div>
+
+                <span className="serving-status">
+                  Waiting for next patient
+                </span>
+              </div>
+            )}
+
+          </div>
         </div>
 
-        {/* Up Next Panel */}
+        {/* ================= UP NEXT ================= */}
         <div className="upnext-panel">
-          <p className="upnext-label">UP NEXT</p>
-          <div className="upnext-list">
-            {upNext.map((ticket, index) => (
-              <div key={index} className="upnext-item">
-                {ticket}
-              </div>
-            ))}
+
+          <div className="upnext-header">
+            <div>
+              <small>NEXT PATIENTS</small>
+              <p className="upnext-label">
+                UP NEXT
+              </p>
+            </div>
+
+            <span className="live-indicator">
+              ● LIVE
+            </span>
           </div>
+
+          <div className="upnext-list">
+
+            {upNext.length > 0 ? (
+              upNext.map((ticket, index) => (
+                <div
+                  key={index}
+                  className="upnext-item"
+                >
+                  <span className="upnext-position">
+                    {index + 1}
+                  </span>
+
+                  <strong>
+                    {ticket}
+                  </strong>
+                </div>
+              ))
+            ) : (
+              <div className="upnext-item empty-next">
+                No patients waiting
+              </div>
+            )}
+
+          </div>
+
         </div>
 
       </div>
 
-      {/* Footer */}
+      {/* ================= FOOTER ================= */}
       <div className="display-footer">
-        <span>Waiting: <strong>{waitingCount}</strong></span>
-        <span className="display-credit">Forged by Digital Ronin</span>
+
+        <div className="footer-waiting">
+          <span className="waiting-dot" />
+
+          <span>
+            Patients Waiting:
+            <strong> {waitingCount}</strong>
+          </span>
+        </div>
+
+        <span className="display-credit">
+          SmartCare Hospital • Digital Ronin
+        </span>
+
       </div>
 
     </div>

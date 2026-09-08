@@ -1,82 +1,84 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QSmart.Application.DTOs.Queue;
 using QSmart.Application.Interfaces;
 using QSmart.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
-using QSmart.Application.DTOs.Queue;
 
 namespace QSmart.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-
-
 public class QueueController : ControllerBase
 {
-    private readonly IQueueRepository _queueRepository;
+   private readonly IQueueRepository _queueRepository;
+    private readonly IQueuePredictionService _queuePredictionService;
 
     public QueueController(
-        IQueueRepository queueRepository)
-    {
-        _queueRepository = queueRepository;
-    }
+    IQueueRepository queueRepository,
+    IQueuePredictionService queuePredictionService)
+{
+    _queueRepository = queueRepository;
+    _queuePredictionService = queuePredictionService;
+}
+
+    // =====================================================
+    // KIOSK / WALK-IN
+    // =====================================================
 
     [HttpPost("generate")]
     public async Task<IActionResult> Generate(
-    [FromBody] GenerateTicketRequest request)
+        [FromBody] GenerateTicketRequest request)
     {
         var branchId =
-            Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            Guid.Parse(
+                "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
         var lastTicket =
             await _queueRepository
                 .GetLastTicketAsync(branchId);
 
-        int nextNumber = 1;
-
-        if (lastTicket != null)
-        {
-            nextNumber =
-                lastTicket.Number + 1;
-        }
+        var nextNumber =
+            lastTicket?.Number + 1 ?? 1;
 
         var serviceId = request.ServiceId;
 
-        string prefix = "G";
+        var prefix =
+            GetServicePrefix(serviceId);
 
-        if (serviceId == Guid.Parse("50BBFB12-49A0-441A-A06D-13DC5890631C"))
-            prefix = "P";
-
-        if (serviceId == Guid.Parse("8B746602-0209-4E42-AF06-6B7870CB69BD"))
-            prefix = "G";
-
-        if (serviceId == Guid.Parse("CA6AD9BE-54EB-4706-AAC6-93256C5610CF"))
-            prefix = "B";
-
-        if (serviceId == Guid.Parse("8740E138-B984-49B5-BE28-CEC86996E594"))
-            prefix = "O";
-
-        if (serviceId == Guid.Parse("EE9C8F2C-85D1-40D2-9E57-CF17A1CB28AE"))
-            prefix = "V";
-
-        if (serviceId == Guid.Parse("35827DD6-25B5-4D5B-BCE2-F77785A4B80F"))
-            prefix = "D";    
+        if (prefix == null)
+        {
+            return BadRequest(
+                "Invalid queue service.");
+        }
 
         var ticket = new QueueTicket
         {
             Id = Guid.NewGuid(),
             Number = nextNumber,
-            TicketNumber = $"{prefix}{nextNumber:000}",
+
+            TicketNumber =
+                $"{prefix}{nextNumber:000}",
+
             ServiceId = serviceId,
             BranchId = branchId,
+
             CounterId =
                 Guid.Parse(
                     "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+
+            // Walk-in ticket has no patient account
+            UserId = null,
+
             Status = "Waiting",
             CreatedAt = DateTime.UtcNow
         };
 
-        await _queueRepository.AddAsync(ticket);
-        await _queueRepository.SaveChangesAsync();
+        await _queueRepository
+            .AddAsync(ticket);
+
+        await _queueRepository
+            .SaveChangesAsync();
 
         return Ok(new
         {
@@ -84,68 +86,486 @@ public class QueueController : ControllerBase
         });
     }
 
+    // =====================================================
+    // MOBILE PATIENT - JOIN QUEUE
+    // =====================================================
 
-    [Authorize]
-    [HttpPost("next")]
-    public async Task<IActionResult> Next()
+    [Authorize(Roles = "Patient")]
+    [HttpPost("join")]
+    public async Task<IActionResult> JoinQueue(
+        [FromBody] GenerateTicketRequest request)
     {
+        var userId = GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        // Prevent patient from having multiple
+        // active queue tickets.
+        var existingTicket =
+            await _queueRepository
+                .GetActiveTicketByUserAsync(
+                    userId.Value);
+
+        if (existingTicket != null)
+        {
+            return Conflict(new
+            {
+                message =
+                    "You already have an active queue.",
+
+                ticketNumber =
+                    existingTicket.TicketNumber,
+
+                status =
+                    existingTicket.Status
+            });
+        }
+
+        var branchId =
+            Guid.Parse(
+                "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+        var serviceId =
+            request.ServiceId;
+
+        var prefix =
+            GetServicePrefix(serviceId);
+
+        if (prefix == null)
+        {
+            return BadRequest(
+                "Invalid queue service.");
+        }
+
+        var lastTicket =
+            await _queueRepository
+                .GetLastTicketAsync(branchId);
+
+        var nextNumber =
+            lastTicket?.Number + 1 ?? 1;
+
+        var ticket =
+            new QueueTicket
+            {
+                Id = Guid.NewGuid(),
+
+                Number = nextNumber,
+
+                TicketNumber =
+                    $"{prefix}{nextNumber:000}",
+
+                BranchId = branchId,
+
+                CounterId =
+                    Guid.Parse(
+                        "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+
+                ServiceId = serviceId,
+
+                // THIS connects ticket to patient.
+                UserId = userId.Value,
+
+                Status = "Waiting",
+
+                CreatedAt =
+                    DateTime.UtcNow
+            };
+
+        await _queueRepository
+            .AddAsync(ticket);
+
+        await _queueRepository
+            .SaveChangesAsync();
+
+        return Ok(new
+        {
+            message =
+                "Successfully joined the queue.",
+
+            ticket.TicketNumber,
+
+            ticket.Status,
+
+            ticket.CreatedAt
+        });
+    }
+
+    // =====================================================
+    // MOBILE PATIENT - MY QUEUE
+    // =====================================================
+
+    [Authorize(Roles = "Patient")]
+    [HttpGet("my-queue")]
+    public async Task<IActionResult> MyQueue()
+    {
+        var userId =
+            GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
         var ticket =
             await _queueRepository
-                .GetNextWaitingTicketAsync();
+                .GetActiveTicketByUserAsync(
+                    userId.Value);
 
         if (ticket == null)
         {
-            return NotFound(
-                "No waiting tickets");
+            return NotFound(new
+            {
+                message =
+                    "You do not have an active queue."
+            });
         }
 
+        var peopleAhead =
+            await _queueRepository
+                .GetPeopleAheadAsync(ticket);
+
+        var liveQueue =
+            await _queueRepository
+                .GetLiveQueueAsync(
+                    ticket.BranchId,
+                    ticket.ServiceId);
+
+        return Ok(new
+        {
+            ticketNumber =
+                ticket.TicketNumber,
+
+            status =
+                ticket.Status,
+
+            serviceId =
+                ticket.ServiceId,
+
+            serviceName =
+                ticket.Service?.Name
+                ?? "Hospital Service",
+
+            branchName =
+                ticket.Branch?.Name
+                ?? "SmartCare Hospital",
+
+            counterName =
+                ticket.Counter?.Name
+                ?? "",
+
+            peopleAhead,
+
+            waitingSince =
+                ticket.CreatedAt,
+
+            calledAt =
+                ticket.CalledAt,
+
+            liveQueue =
+                liveQueue.Select(x => new
+                {
+                    ticketNumber =
+                        x.TicketNumber,
+
+                    status =
+                        x.Status
+                })
+        });
+    }
+
+    // =====================================================
+// MOBILE PATIENT - QUEUE PREDICTION
+// =====================================================
+
+[Authorize(Roles = "Patient")]
+[HttpGet("prediction")]
+public async Task<IActionResult> Prediction()
+{
+    var userId = GetCurrentUserId();
+
+    if (userId == null)
+    {
+        return Unauthorized();
+    }
+
+    var ticket =
+        await _queueRepository
+            .GetActiveTicketByUserAsync(
+                userId.Value);
+
+    if (ticket == null)
+    {
+        return NotFound(new
+        {
+            message =
+                "You do not have an active queue."
+        });
+    }
+
+    var prediction =
+        await _queuePredictionService
+            .PredictAsync(ticket);
+
+    return Ok(prediction);
+}
+
+    // =====================================================
+    // MOBILE PATIENT - LEAVE / CANCEL QUEUE
+    // =====================================================
+
+    [Authorize(Roles = "Patient")]
+    [HttpPost("leave")]
+    public async Task<IActionResult> LeaveQueue()
+    {
+        var userId =
+            GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var ticket =
+            await _queueRepository
+                .GetActiveTicketByUserAsync(
+                    userId.Value);
+
+        if (ticket == null)
+        {
+            return NotFound(new
+            {
+                message =
+                    "You do not have an active queue."
+            });
+        }
+
+        // Don't allow cancellation once serving.
+        if (ticket.Status == "Serving")
+        {
+            return BadRequest(new
+            {
+                message =
+                    "Your queue is already being served."
+            });
+        }
+
+            ticket.Status =
+            "Cancelled";
+
+            ticket.CancelledAt =
+                DateTime.UtcNow;
+
+            await _queueRepository
+            .SaveChangesAsync();
+
+        return Ok(new
+        {
+            message =
+                "You have left the queue.",
+
+            ticketNumber =
+                ticket.TicketNumber,
+
+            status =
+                ticket.Status
+        });
+    }
+
+    // =====================================================
+    // AGENT - CALL NEXT
+    // =====================================================
+
+  [Authorize]
+[HttpPost("next")]
+public async Task<IActionResult> Next()
+{
+    // Get the logged-in agent's counter.
+    var counterIdClaim =
+        User.FindFirst("CounterId")?.Value;
+
+    if (string.IsNullOrWhiteSpace(counterIdClaim))
+    {
+        return Unauthorized(new
+        {
+            message =
+                "No counter is assigned to this agent."
+        });
+    }
+
+    if (!Guid.TryParse(
+            counterIdClaim,
+            out var counterId))
+    {
+        return Unauthorized(new
+        {
+            message =
+                "Invalid counter assignment."
+        });
+    }
+
+    // IMPORTANT:
+    // One counter can only serve one ticket at a time.
+    var currentServing =
+        await _queueRepository
+            .GetCurrentServingByCounterAsync(
+                counterId);
+
+    if (currentServing != null)
+    {
+        return Conflict(new
+        {
+            message =
+                "Please complete the current ticket before calling the next patient.",
+
+            ticketNumber =
+                currentServing.TicketNumber
+        });
+    }
+
+    // Get next waiting patient.
+    var ticket =
+        await _queueRepository
+            .GetNextWaitingTicketAsync();
+
+    if (ticket == null)
+    {
+        return NotFound(new
+        {
+            message =
+                "No waiting tickets."
+        });
+    }
+
+    // IMPORTANT:
+    // Assign the ticket to THIS agent's counter.
+    ticket.CounterId = counterId;
+
     ticket.Status = "Serving";
-    ticket.CalledAt = DateTime.UtcNow;
+
+    ticket.CalledAt =
+        DateTime.UtcNow;
+
+    await _queueRepository
+        .SaveChangesAsync();
+
+    return Ok(new
+    {
+        ticket.TicketNumber,
+        ticket.Status,
+        counterId
+    });
+}
+
+    // =====================================================
+    // AGENT - COMPLETE
+    // =====================================================
+
+    [Authorize]
+[HttpPost("complete/{ticketNumber}")]
+public async Task<IActionResult> Complete(
+    string ticketNumber)
+{
+    var counterIdClaim =
+        User.FindFirst("CounterId")?.Value;
+
+    if (string.IsNullOrWhiteSpace(counterIdClaim))
+    {
+        return Unauthorized(new
+        {
+            message = "No counter is assigned to this agent."
+        });
+    }
+
+    if (!Guid.TryParse(counterIdClaim, out var counterId))
+    {
+        return Unauthorized(new
+        {
+            message = "Invalid counter assignment."
+        });
+    }
+
+    // Get the actual ticket currently being served
+    // by THIS logged-in counter.
+    var currentServing =
+        await _queueRepository
+            .GetCurrentServingByCounterAsync(counterId);
+
+    if (currentServing == null)
+    {
+        return NotFound(new
+        {
+            message = "No ticket is currently being served at this counter."
+        });
+    }
+
+    // Prevent completing another counter's / stale ticket.
+    if (!string.Equals(
+        currentServing.TicketNumber,
+        ticketNumber,
+        StringComparison.OrdinalIgnoreCase))
+    {
+        return Conflict(new
+        {
+            message =
+                $"This counter is currently serving {currentServing.TicketNumber}, not {ticketNumber}."
+        });
+    }
+
+    currentServing.Status = "Completed";
+    currentServing.CompletedAt = DateTime.UtcNow;
 
     await _queueRepository.SaveChangesAsync();
 
     return Ok(new
     {
-        ticket.TicketNumber,
-        ticket.Status
+        currentServing.TicketNumber,
+        currentServing.Status,
+        currentServing.CompletedAt,
+        counterId
     });
-   }
+}
 
+    // =====================================================
+    // DASHBOARD
+    // =====================================================
 
     [Authorize]
-   [HttpPost("complete/{ticketNumber}")]
-    public async Task<IActionResult> Complete(
-        string ticketNumber)
+[HttpGet("dashboard")]
+public async Task<IActionResult> Dashboard()
+{
+    // Get logged-in agent's assigned counter.
+    var counterIdClaim =
+        User.FindFirst("CounterId")?.Value;
+
+    if (string.IsNullOrWhiteSpace(counterIdClaim))
     {
-        var ticket =
-            await _queueRepository
-                .GetByTicketNumberAsync(ticketNumber);
-
-        if (ticket == null)
+        return Unauthorized(new
         {
-            return NotFound();
-        }
-
-        ticket.Status = "Completed";
-        ticket.CompletedAt = DateTime.UtcNow;
-
-        await _queueRepository.SaveChangesAsync();
-
-        return Ok(new
-        {
-            ticket.TicketNumber,
-            ticket.Status
+            message =
+                "No counter is assigned to this agent."
         });
     }
 
-
-    [Authorize]
-    [HttpGet("dashboard")]
-    public async Task<IActionResult> Dashboard()
+    if (!Guid.TryParse(
+            counterIdClaim,
+            out var counterId))
     {
+        return Unauthorized(new
+        {
+            message =
+                "Invalid counter assignment."
+        });
+    }
+
+    // Only show the ticket being served
+    // by THIS agent's counter.
     var serving =
         await _queueRepository
-            .GetCurrentServingAsync();
+            .GetCurrentServingByCounterAsync(
+                counterId);
 
     var waiting =
         await _queueRepository
@@ -164,37 +584,46 @@ public class QueueController : ControllerBase
             waiting,
 
         completedCount =
-            completed
-    });
-    }
+            completed,
 
+        counterId
+    });
+}
+
+    // =====================================================
+    // HISTORY
+    // =====================================================
 
     [Authorize]
     [HttpGet("history")]
-    public async Task<IActionResult> History()  
+    public async Task<IActionResult> History()
     {
-    var tickets =
-        await _queueRepository
-            .GetHistoryAsync();
+        var tickets =
+            await _queueRepository
+                .GetHistoryAsync();
 
-    return Ok(
-        tickets.Select(x => new
-        {
-            x.TicketNumber,
-            x.Status,
-            x.CreatedAt,
-            x.CalledAt,
-            x.CompletedAt
-        }));
+        return Ok(
+            tickets.Select(x => new
+            {
+                x.TicketNumber,
+                x.Status,
+                x.CreatedAt,
+                x.CalledAt,
+                x.CompletedAt
+            }));
     }
 
+    // =====================================================
+    // CURRENT COUNTER
+    // =====================================================
 
     [Authorize]
     [HttpGet("current")]
     public async Task<IActionResult> Current()
     {
         var counterIdClaim =
-            User.FindFirst("CounterId")?.Value;
+            User.FindFirst(
+                "CounterId")?.Value;
 
         if (counterIdClaim == null)
         {
@@ -202,7 +631,8 @@ public class QueueController : ControllerBase
         }
 
         var counterId =
-            Guid.Parse(counterIdClaim);
+            Guid.Parse(
+                counterIdClaim);
 
         var ticket =
             await _queueRepository
@@ -223,34 +653,181 @@ public class QueueController : ControllerBase
         });
     }
 
+    // =====================================================
+    // PUBLIC QUEUE DISPLAY
+    // =====================================================
+
     [HttpGet("display")]
-        public async Task<IActionResult> Display()
+    public async Task<IActionResult> Display()
+    {
+        var serving =
+            await _queueRepository
+                .GetServingTicketsAsync();
+
+        var upNext =
+            await _queueRepository
+                .GetUpNextTicketsAsync();
+
+        var waiting =
+            await _queueRepository
+                .GetWaitingCountAsync();
+
+        return Ok(new
         {
-            var serving =
-                await _queueRepository
-                    .GetServingTicketsAsync();
-
-            var upNext =
-                await _queueRepository
-                    .GetUpNextTicketsAsync();
-
-            var waiting =
-                await _queueRepository
-                    .GetWaitingCountAsync();
-
-            return Ok(new
-            {
-                serving = serving.Select(x => new
+            serving =
+                serving.Select(x => new
                 {
                     x.CounterId,
                     x.TicketNumber
                 }),
 
-                upNext = upNext.Select(x =>
-                    x.TicketNumber),
+            upNext =
+                upNext.Select(
+                    x => x.TicketNumber),
 
-                waitingCount = waiting
-            });
+            waitingCount =
+                waiting
+        });
+    }
+
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
+    private Guid? GetCurrentUserId()
+    {
+        var claim =
+            User.FindFirst(
+                ClaimTypes.NameIdentifier);
+
+        if (claim == null)
+        {
+            return null;
         }
 
+        if (!Guid.TryParse(
+                claim.Value,
+                out var userId))
+        {
+            return null;
+        }
+
+        return userId;
+    }
+
+    private static string?
+        GetServicePrefix(Guid serviceId)
+    {
+        if (serviceId ==
+            Guid.Parse(
+                "10000000-0000-0000-0000-000000000001"))
+        {
+            return "G";
+        }
+
+        if (serviceId ==
+            Guid.Parse(
+                "10000000-0000-0000-0000-000000000002"))
+        {
+            return "E";
+        }
+
+        if (serviceId ==
+            Guid.Parse(
+                "10000000-0000-0000-0000-000000000003"))
+        {
+            return "S";
+        }
+
+        if (serviceId ==
+            Guid.Parse(
+                "10000000-0000-0000-0000-000000000004"))
+        {
+            return "L";
+        }
+
+        if (serviceId ==
+            Guid.Parse(
+                "10000000-0000-0000-0000-000000000005"))
+        {
+            return "D";
+        }
+
+        if (serviceId ==
+            Guid.Parse(
+                "10000000-0000-0000-0000-000000000006"))
+        {
+            return "O";
+        }
+
+        return null;
+    }
+
+    // =====================================================
+// MOBILE PATIENT - QUEUE HISTORY
+// =====================================================
+
+[Authorize(Roles = "Patient")]
+[HttpGet("my-history")]
+public async Task<IActionResult> MyHistory()
+{
+    var userId = GetCurrentUserId();
+
+    if (userId == null)
+    {
+        return Unauthorized();
+    }
+
+    var tickets =
+        await _queueRepository
+            .GetPatientHistoryAsync(userId.Value);
+
+    return Ok(
+        tickets.Select(x => new
+        {
+            ticketNumber = x.TicketNumber,
+
+            status = x.Status,
+
+            serviceName =
+                x.Service?.Name
+                ?? "Hospital Service",
+
+            branchName =
+                x.Branch?.Name
+                ?? "SmartCare Hospital",
+
+            counterName =
+                x.Counter?.Name
+                ?? "",
+
+            createdAt = x.CreatedAt,
+
+            calledAt = x.CalledAt,
+
+            completedAt = x.CompletedAt,
+
+            cancelledAt = x.CancelledAt,
+
+            waitMinutes =
+                x.CalledAt.HasValue
+                    ? Math.Max(
+                        0,
+                        Math.Round(
+                            (x.CalledAt.Value - x.CreatedAt)
+                            .TotalMinutes))
+                    : (double?)null,
+
+            serviceMinutes =
+                x.CalledAt.HasValue &&
+                x.CompletedAt.HasValue
+                    ? Math.Max(
+                        0,
+                        Math.Round(
+                            (x.CompletedAt.Value -
+                             x.CalledAt.Value)
+                            .TotalMinutes))
+                    : (double?)null
+        }));
+}
 }

@@ -1,272 +1,437 @@
 import "./styles/Kiosk.css";
-import logo from "../assets/logo.png";
-import { useState, useRef } from "react";
-import TicketPrint from "../components/TicketPrint";
 
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import TicketPrint from "../components/TicketPrint";
+import logo from "../assets/logo.png";
 
 import {
-  FiMessageCircle,
-  FiUserPlus,
-  FiDownload
+  FiActivity,
+  FiAlertCircle,
+  FiArrowLeft,
+  FiArrowRight,
+  FiCheck,
+  FiClock,
+  FiHeart,
+  FiMoreHorizontal,
+  FiPlus,
+  FiUsers,
 } from "react-icons/fi";
 
-import { MdPayment } from "react-icons/md";
-import { FaCrown } from "react-icons/fa";
-import { BsPersonHeart } from "react-icons/bs";
+import { MdOutlineBiotech } from "react-icons/md";
+import { FaTooth } from "react-icons/fa";
 
-export default function Kiosk() {
-
- const [ticketNumber, setTicketNumber] = useState("");
- const [showTicketModal, setShowTicketModal] = useState(false);
- const [serviceName, setServiceName] = useState("");
- const printRef = useRef<HTMLDivElement>(null);
- const generateTicket = async (
-  serviceId: string,
-  serviceName: string
-) => {
-  try {
-    const response = await fetch(
-      "http://localhost:5025/api/Queue/generate",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          serviceId,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    setTicketNumber(data.ticketNumber);
-    setServiceName(serviceName);
-    setShowTicketModal(true);
-
-
-    setTimeout(() => {
-      setShowTicketModal(false);
-      setTicketNumber("");
-    }, 5000);
-
-    setTimeout(() => {
-    window.print();
-    }, 300);
-
-  } catch (error) {
-    console.error(error);
-  }
+type ServiceItem = {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  badge?: string;
 };
 
+export default function Kiosk() {
+  const navigate = useNavigate();
+
+  const [ticketNumber, setTicketNumber] = useState("");
+  const [serviceName, setServiceName] = useState("");
+
+  const [showTicketModal, setShowTicketModal] =
+    useState(false);
+
+  const [isGenerating, setIsGenerating] =
+    useState(false);
+
+  const [error, setError] = useState("");
+
+  const printRef = useRef<HTMLDivElement>(null);
+
+  /*
+   * IMPORTANT:
+   * Current IDs are preserved from your existing backend
+   * so we don't break ticket generation.
+   *
+   * Later, when we migrate / seed SmartCare Hospital data,
+   * we can replace these IDs with the actual hospital service IDs.
+   */
+ const services: ServiceItem[] = [
+  {
+    id: "10000000-0000-0000-0000-000000000001",
+    name: "General Consultation",
+    description:
+      "General check-up and common health concerns.",
+    icon: <FiActivity />,
+    color: "green",
+  },
+
+  {
+    id: "10000000-0000-0000-0000-000000000002",
+    name: "Emergency",
+    description:
+      "Priority service for urgent medical concerns.",
+    icon: <FiAlertCircle />,
+    color: "red",
+    badge: "Priority",
+  },
+
+  {
+    id: "10000000-0000-0000-0000-000000000003",
+    name: "Specialist",
+    description:
+      "Consult with our specialized medical doctors.",
+    icon: <FiHeart />,
+    color: "purple",
+  },
+
+  {
+    id: "10000000-0000-0000-0000-000000000004",
+    name: "Laboratory",
+    description:
+      "Laboratory tests and diagnostic procedures.",
+    icon: <MdOutlineBiotech />,
+    color: "orange",
+  },
+
+  {
+    id: "10000000-0000-0000-0000-000000000005",
+    name: "Dental Care",
+    description:
+      "Dental consultation, check-up and treatment.",
+    icon: <FaTooth />,
+    color: "blue",
+  },
+
+  {
+    id: "10000000-0000-0000-0000-000000000006",
+    name: "Other Services",
+    description:
+      "Medical records, billing and other concerns.",
+    icon: <FiMoreHorizontal />,
+    color: "teal",
+  },
+];
+
+  const generateTicket = async (
+    serviceId: string,
+    selectedServiceName: string
+  ) => {
+    if (isGenerating) return;
+
+    try {
+      setError("");
+      setIsGenerating(true);
+
+      const response = await fetch(
+        "http://localhost:5025/api/Queue/generate",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            serviceId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Ticket generation failed (${response.status})`
+        );
+      }
+
+      const data = await response.json();
+
+      setTicketNumber(data.ticketNumber);
+      setServiceName(selectedServiceName);
+      setShowTicketModal(true);
+
+      setTimeout(() => {
+        window.print();
+      }, 350);
+
+      setTimeout(() => {
+        setShowTicketModal(false);
+        setTicketNumber("");
+      }, 5000);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        "Unable to generate your queue ticket. Please try again."
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
-    <div className="kiosk-page">
+    <div className="smartcare-kiosk">
+      {/* ================= BACKGROUND ================= */}
 
-      
-        {
-        showTicketModal && (
-            <div className="ticket-modal">
+      <div className="kiosk-bg-circle circle-one" />
+      <div className="kiosk-bg-circle circle-two" />
+      <div className="kiosk-bg-dots" />
 
-            <div className="ticket-card">
+      {/* ================= TOP BAR ================= */}
 
-                <h3>Your Queue Number</h3>
+      <header className="kiosk-topbar">
+        <button
+          className="kiosk-back-btn"
+          onClick={() => navigate("/")}
+        >
+          <FiArrowLeft />
+          <span>Back to Home</span>
+        </button>
 
-                <div className="ticket-number">
-                {ticketNumber}
-                </div>
+            <button
+        type="button"
+        className="kiosk-brand"
+        onClick={() => navigate("/")}
+        aria-label="SmartCare Home"
+      >
+        <img
+          src={logo}
+          alt="SmartCare Hospital"
+        />
+      </button>
 
-                <p>
-                Please wait for your turn.
-                </p>
+              <div className="kiosk-status">
+          <span className="online-dot" />
 
-            </div>
-
-            </div>
-        )
-        }
-
-      <div className="background-glow glow-left"></div>
-      <div className="background-glow glow-right"></div>
-
-      <div className="kiosk-header">
-
-        <div className="logo-container">
-          <img
-            src={logo}
-            alt="Banko De Filipino"
-            className="bank-logo"
-          />
+          System Online
         </div>
+      </header>
 
-        <div className="header-content">
+      {/* ================= MAIN ================= */}
 
-          <div className="baybayin-banner">
-            ᜋᜄᜈ᜔ᜇᜅ᜔ ᜀᜇᜏ᜔
+      <main className="kiosk-main">
+        {/* HEADER */}
+
+        <section className="kiosk-intro">
+          <div className="kiosk-ai-label">
+            ✦ SMARTCARE QUEUE
           </div>
 
-          <h1 className="bank-title">
-            BANKO DE FILIPINO
+          <h1>
+            How can we help you
+            <span> today?</span>
           </h1>
 
-          <p className="bank-subtitle">
-            Modern Queue Management System By Digital Ronin
+          <p>
+            Select the hospital service you need and
+            SmartCare will generate your queue number.
           </p>
 
+          <div className="kiosk-info-row">
+            <div>
+              <FiClock />
+
+              <span>
+                <strong>18 mins</strong>
+                Average wait
+              </span>
+            </div>
+
+            <div>
+              <FiUsers />
+
+              <span>
+                <strong>58</strong>
+                Patients waiting
+              </span>
+            </div>
+
+            <div>
+              <FiCheck />
+
+              <span>
+                <strong>Live</strong>
+                Queue updates
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* SERVICES */}
+
+        <section className="kiosk-services">
+          <div className="services-heading">
+            <div>
+              <span className="section-eyebrow">
+                SELECT A SERVICE
+              </span>
+
+              <h2>
+                Get Your Queue
+              </h2>
+            </div>
+
+            <p>
+              Tap a service below to continue.
+            </p>
+          </div>
+
+          {error && (
+            <div className="kiosk-error">
+              <FiAlertCircle />
+
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="kiosk-service-grid">
+            {services.map((service) => (
+              <button
+                type="button"
+                key={service.id}
+                className={`kiosk-service-card ${service.color}`}
+                disabled={isGenerating}
+                onClick={() =>
+                  generateTicket(
+                    service.id,
+                    service.name
+                  )
+                }
+              >
+                {service.badge && (
+                  <span className="service-badge">
+                    {service.badge}
+                  </span>
+                )}
+
+                <div
+                  className={`kiosk-service-icon ${service.color}`}
+                >
+                  {service.icon}
+                </div>
+
+                <div className="kiosk-service-content">
+                  <h3>
+                    {service.name}
+                  </h3>
+
+                  <p>
+                    {service.description}
+                  </p>
+
+                  <span className="service-action">
+                    Get Queue
+                    <FiArrowRight />
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* ASSISTANCE */}
+
+        <section className="kiosk-assistance">
+          <div className="assistance-icon">
+            ?
+          </div>
+
+          <div>
+            <strong>
+              Not sure which service to choose?
+            </strong>
+
+            <span>
+              Our hospital staff can assist you at
+              the information desk.
+            </span>
+          </div>
+        </section>
+      </main>
+
+      {/* ================= FOOTER ================= */}
+
+      <footer className="kiosk-footer">
+        <span>
+          SmartCare Hospital
+        </span>
+
+        <span className="footer-divider">
+          •
+        </span>
+
+        <span>
+          AI-Powered Smart Queue System
+        </span>
+
+        <span className="footer-divider">
+          •
+        </span>
+
+        <span>
+          Compassionate Care, Smarter Solutions.
+        </span>
+      </footer>
+
+      {/* ================= TICKET MODAL ================= */}
+
+      {showTicketModal && (
+        <div className="ticket-modal-overlay">
+          <div className="smart-ticket-modal">
+            <div className="ticket-success-icon">
+              <FiCheck />
+            </div>
+
+            <span className="ticket-success-label">
+              QUEUE CREATED SUCCESSFULLY
+            </span>
+
+            <h3>
+              Your Queue Number
+            </h3>
+
+            <div className="ticket-number">
+              {ticketNumber}
+            </div>
+
+            <div className="ticket-service">
+              {serviceName}
+            </div>
+
+            <div className="ticket-divider" />
+
+            <div className="ticket-message">
+              <FiClock />
+
+              <div>
+                <strong>
+                  Please wait for your turn.
+                </strong>
+
+                <span>
+                  Your ticket will be printed
+                  automatically.
+                </span>
+              </div>
+            </div>
+
+            <div className="ticket-printing">
+              Printing your ticket...
+            </div>
+          </div>
         </div>
+      )}
 
-      </div>
+      {/* ================= PRINT ================= */}
 
-      <div className="services-grid">
-
-        {/* GENERAL INQUIRY */}
-        <div
-            className="service-card"
-            onClick={() =>
-                generateTicket(
-            "8B746602-0209-4E42-AF06-6B7870CB69BD",
-            "GENERAL INQUIRY"
-            )
-            }
-            >
-
-          <div className="service-icon">
-            <FiMessageCircle />
-          </div>
-
-          <div className="service-divider"></div>
-
-          <div className="service-title">
-            GENERAL INQUIRY
-          </div>
-
-        </div>
-
-        {/* BILLS PAYMENT */}
-        <div
-            className="service-card"
-            onClick={() =>
-                generateTicket(
-                "CA6AD9BE-54EB-4706-AAC6-93256C5610CF",
-                "BILLS PAYMENT"
-                )
-            }
-            >
-
-          <div className="service-icon">
-            <MdPayment />
-          </div>
-
-          <div className="service-divider"></div>
-
-          <div className="service-title">
-            BILLS PAYMENT
-          </div>
-
-        </div>
-
-        {/* OPEN ACCOUNT */}
-         <div
-            className="service-card"
-            onClick={() =>
-                generateTicket(
-                "8740E138-B984-49B5-BE28-CEC86996E594",
-                "OPEN ACCOUNT"
-                )
-            }
-            >
-
-          <div className="service-icon">
-            <FiUserPlus />
-          </div>
-
-          <div className="service-divider"></div>
-
-          <div className="service-title">
-            OPEN ACCOUNT
-          </div>
-
-        </div>
-
-        {/* VIP */}
-        <div
-            className="service-card"
-            onClick={() =>
-                generateTicket(
-                "EE9C8F2C-85D1-40D2-9E57-CF17A1CB28AE",
-                "VIP EXPRESS"
-)
-            }
-            >
-
-          <div className="service-icon">
-            <FaCrown />
-          </div>
-
-          <div className="service-divider"></div>
-
-          <div className="service-title">
-            VIP EXPRESS
-          </div>
-
-        </div>
-
-        {/* PWD */}
-        <div
-            className="service-card"
-            onClick={() =>
-                generateTicket(
-                "50BBFB12-49A0-441A-A06D-13DC5890631C","PWD/SENIOR"
-                )
-            }
-            >
-
-          <div className="service-icon">
-            <BsPersonHeart />
-          </div>
-
-          <div className="service-divider"></div>
-
-          <div className="service-title">
-            PWD / SENIOR
-          </div>
-
-        </div>
-
-        {/* DEPOSIT */}
-        <div
-            className="service-card"
-            onClick={() =>
-                generateTicket(
-                "35827DD6-25B5-4D5B-BCE2-F77785A4B80F","DEPOSIT"
-                )
-            }
-            >
-
-          <div className="service-icon">
-            <FiDownload />
-          </div>
-
-          <div className="service-divider"></div>
-
-          <div className="service-title">
-            DEPOSIT / ENCASHMENT
-          </div>
-
-        </div>
-
-      </div>
-      
-            <div
+      <div
         ref={printRef}
         className="print-only"
-        >
+      >
         <TicketPrint
-            ticketNumber={ticketNumber}
-            serviceName={serviceName}
+          ticketNumber={ticketNumber}
+          serviceName={serviceName}
         />
-        </div>
-
+      </div>
     </div>
   );
 }

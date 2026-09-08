@@ -1,363 +1,884 @@
+/* =========================================================
+   SMARTCARE AGENT DASHBOARD
+   Same JSX / Same class names
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* =========================
+   PAGE
+   ========================= */
 
 .agent-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #041c4a, #0b2f7d);
+  width: 100vw;
+  height: 100vh;
+  min-height: 650px;
+
   display: flex;
-  overflow: hidden;
   position: relative;
-  font-family: 'Rajdhani', sans-serif;
-  color: #fff;
+  overflow: hidden;
+
+  font-family: Inter, Arial, Helvetica, sans-serif;
+
+  background:
+    radial-gradient(
+      circle at 75% 20%,
+      rgba(61, 150, 232, 0.13),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      #6599dd 0%,
+      #dfeaf5 50%,
+      #e8f1f8 100%
+    );
+
+  color: #173b63;
 }
 
 
+/* =========================
+   BACKGROUND WATERMARK
+   ========================= */
+
 .agent-bg-logo {
-  position: fixed;
-  top: 50%;
-  left: calc(260px + (100vw - 260px) / 2);
-  transform: translate(-50%, -50%);
-  width: 680px;
-  height: 680px;
+  position: absolute;
+
+  width: 430px;
+  height: 430px;
+
   object-fit: contain;
-  opacity: 0.10;
+
+  right: 11%;
+  top: 52%;
+
+  transform: translateY(-50%);
+
+  opacity: 10%;
+
   pointer-events: none;
   user-select: none;
+
   z-index: 0;
 }
 
-/* ─────────────────────────────────────────
+
+/* =========================================================
    SIDEBAR
-───────────────────────────────────────── */
+   ========================================================= */
+
 .agent-sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  background: rgba(4, 10, 28, 0.55);
-  backdrop-filter: blur(16px);
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  width: 305px;
+  min-width: 305px;
+  height: 100vh;
+
   display: flex;
   flex-direction: column;
-  padding: 32px 20px 28px;
+
+  padding: 30px 23px;
+
   position: relative;
-  z-index: 2;
-  gap: 12px;
+  z-index: 5;
+
+  background:
+    linear-gradient(
+      180deg,
+      #d9e9f7 0%,
+      #d1e3f2 100%
+    );
+
+  border-right: 1px solid rgba(93, 134, 171, 0.18);
+
+  box-shadow:
+    8px 0 30px rgba(38, 78, 115, 0.06);
+}
+
+
+/* =========================
+   USER CARD
+   ========================= */
+
+.agent-user-card {
+  width: 100%;
+
+  padding: 23px 22px;
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.56),
+      rgba(239, 247, 253, 0.42)
+    );
+
+  border: 1px solid rgba(79, 130, 177, 0.22);
+
+  box-shadow:
+    0 10px 30px rgba(48, 91, 130, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
+  backdrop-filter: blur(14px);
+}
+
+.agent-user-label {
+  margin: 0 0 18px;
+
+  color: #1677ea;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 3px;
+}
+
+.agent-user-name {
+  margin: 0;
+
+  color: #173b63;
+
+  font-size: 21px;
+  font-weight: 800;
+
+  letter-spacing: -0.4px;
+}
+
+.agent-user-role {
+  margin: 8px 0 0;
+
+  color: #7189a0;
+
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .agent-sidebar-spacer {
   flex: 1;
 }
 
-/* User Card */
-.agent-user-card {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 18px;
-  padding: 22px 20px;
-  position: relative;
-  overflow: hidden;
-}
 
-.agent-user-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 215, 0, 0.8),
-    rgba(59, 130, 246, 0.8),
-    transparent
-  );
-  background-size: 300% 300%;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: borderGlow 4s linear infinite;
-  pointer-events: none;
-}
+/* =========================
+   LOGOUT
+   ========================= */
 
-.agent-user-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #ffd700;
-  margin-bottom: 12px;
-}
-
-.agent-user-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 4px;
-}
-
-.agent-user-role {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Logout */
 .logout-btn {
   width: 100%;
-  padding: 13px;
-  border: none;
-  border-radius: 50px;
-  background: #ef4444;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 800;
+  height: 40px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff6268,
+      #ef454d
+    );
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 900;
+
   letter-spacing: 3px;
-  text-transform: uppercase;
+
   cursor: pointer;
-  transition: all 0.25s ease;
+
+  box-shadow:
+    0 10px 22px rgba(239, 69, 77, 0.19);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
 .logout-btn:hover {
-  background: #dc2626;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.35);
+
+  box-shadow:
+    0 14px 27px rgba(239, 69, 77, 0.26);
+
+  filter: brightness(1.03);
 }
 
-/* ─────────────────────────────────────────
-   MAIN PANEL
-───────────────────────────────────────── */
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
 .agent-main {
   flex: 1;
+  min-width: 0;
+  height: 100vh;
+
   display: flex;
   flex-direction: column;
+
   position: relative;
-  z-index: 1;
-  min-width: 0;
+  z-index: 2;
 }
 
-/* Top Header */
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
 .agent-top-header {
+  height: 100px;
+  min-height: 100px;
+
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 18px 36px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  flex-shrink: 0;
+
+  padding: 0 55px;
+
+  background:
+    rgba(229, 240, 249, 0.7);
+
+  border-bottom:
+    1px solid rgba(88, 133, 173, 0.13);
+
+  backdrop-filter: blur(18px);
 }
 
 .agent-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.3));
+  width: 70px;
+  height: 70px;
+
+  object-fit: contain;
+
+  margin-right: 18px;
+
+  filter:
+    drop-shadow(
+      0 5px 10px rgba(31, 106, 170, 0.12)
+    );
+}
+
+.agent-header-brand {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
 }
 
 .agent-header-brand h1 {
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: #fff;
   margin: 0;
+
+  color: #173b63;
+
+  font-size: 31px;
+  font-weight: 900;
+
+  letter-spacing: 2px;
   line-height: 1;
 }
 
 .agent-header-brand span {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.5);
+  margin-top: 7px;
+
+  color: #67829c;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  letter-spacing: 1.3px;
 }
 
-/* Content */
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
 .agent-content {
   flex: 1;
-  padding: 32px 36px;
+
+  width: 100%;
+
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  overflow-y: auto;
+
+  justify-content: center;
+
+  padding:
+    35px
+    clamp(42px, 5vw, 78px)
+    45px;
+
+  position: relative;
+  z-index: 2;
 }
 
-/* ─────────────────────────────────────────
-   NOW SERVING CARD
-───────────────────────────────────────── */
+
+/* =========================================================
+   NOW SERVING
+   ========================================================= */
+
 .serving-card {
   width: 100%;
-  padding: 44px 40px;
-  text-align: center;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.18);
+
+  min-height: 250px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
   position: relative;
+
   overflow: hidden;
+
+  border-radius: 26px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(244, 249, 253, 0.88),
+      rgba(220, 235, 247, 0.82)
+    );
+
+  border:
+    1px solid rgba(63, 126, 181, 0.23);
+
+  box-shadow:
+    0 18px 50px rgba(42, 82, 118, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
+  backdrop-filter: blur(15px);
 }
+
+/* subtle decorative glow */
 
 .serving-card::before {
   content: "";
+
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 215, 0, 0.8),
-    rgba(59, 130, 246, 0.8),
-    transparent
-  );
-  background-size: 300% 300%;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: borderGlow 4s linear infinite;
+
+  width: 280px;
+  height: 280px;
+
+  border-radius: 50%;
+
+  top: -180px;
+  right: -70px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(22, 119, 234, 0.14),
+      transparent 68%
+    );
+
   pointer-events: none;
+}
+
+.serving-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 170px;
+  height: 4px;
+
+  top: 0;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  border-radius: 0 0 8px 8px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #1677ea,
+      transparent
+    );
 }
 
 .serving-label {
+  position: relative;
+  z-index: 2;
+
+  margin-bottom: 19px;
+
+  color: #718aa2;
+
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 5px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  margin-bottom: 16px;
+  font-weight: 900;
+
+  letter-spacing: 6px;
 }
 
 .serving-number {
-  font-size: 100px;
+  position: relative;
+  z-index: 2;
+
+  color: #126dd1;
+
+  font-size: clamp(75px, 7vw, 120px);
   font-weight: 900;
-  color: #ffd700;
-  line-height: 1;
-  text-shadow: 0 0 40px rgba(255, 215, 0, 0.45);
+
+  line-height: 0.9;
+
+  letter-spacing: 3px;
+
+  text-shadow:
+    0 8px 25px rgba(22, 119, 234, 0.12);
 }
 
-/* ─────────────────────────────────────────
-   STATS GRID
-───────────────────────────────────────── */
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
 .agentstats-grid {
+  width: 100%;
+
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 22px;
+
+  margin-top: 25px;
 }
 
 .stat-card {
-  padding: 28px;
-  text-align: center;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  min-height: 165px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
   position: relative;
   overflow: hidden;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(244, 249, 253, 0.82),
+      rgba(218, 233, 245, 0.75)
+    );
+
+  border:
+    1px solid rgba(68, 127, 178, 0.2);
+
+  box-shadow:
+    0 14px 35px rgba(44, 84, 119, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
+  backdrop-filter: blur(14px);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.stat-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 215, 0, 0.8),
-    rgba(59, 130, 246, 0.8),
-    transparent
-  );
-  background-size: 300% 300%;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: borderGlow 4s linear infinite;
-  pointer-events: none;
-}
+.stat-card:hover {
+  transform: translateY(-3px);
 
-.stat-card:nth-child(2)::before {
-  animation-delay: 2s;
+  box-shadow:
+    0 18px 40px rgba(44, 84, 119, 0.11);
 }
 
 .stat-card h3 {
+  margin: 0 0 16px;
+
+  color: #718aa2;
+
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
-  margin-bottom: 12px;
+  font-weight: 900;
+
+  letter-spacing: 5px;
 }
 
 .stat-card span {
-  font-size: 62px;
+  color: #173b63;
+
+  font-size: 58px;
   font-weight: 900;
-  color: #fff;
+
   line-height: 1;
-  display: block;
 }
 
-/* ─────────────────────────────────────────
+
+/* =========================================================
    ACTION BUTTONS
-───────────────────────────────────────── */
+   ========================================================= */
+
 .agent-actions {
+  width: 100%;
+
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 22px;
+
+  margin-top: 25px;
 }
 
-.call-btn,
-.complete-btn {
+.agent-actions button {
+  height: 76px;
+
   border: none;
-  border-radius: 50px;
-  padding: 20px;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 3px;
-  text-transform: uppercase;
+  border-radius: 20px;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  letter-spacing: 4px;
+
   cursor: pointer;
-  transition: all 0.25s ease;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
+
+
+/* CALL NEXT */
 
 .call-btn {
-  background: #22c55e;
-  color: #fff;
+  background:
+    linear-gradient(
+      135deg,
+      #28c978,
+      #17b966
+    );
+
+  box-shadow:
+    0 12px 26px rgba(23, 185, 102, 0.18);
 }
 
 .call-btn:hover {
-  background: #16a34a;
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
+
+  box-shadow:
+    0 17px 32px rgba(23, 185, 102, 0.27);
+
+  filter: brightness(1.025);
 }
 
-.call-btn:disabled {
-  background: #14532d;
-  color: rgba(255, 255, 255, 0.3);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
+
+/* COMPLETE */
 
 .complete-btn {
-  background: #ef4444;
-  color: #fff;
+  background:
+    linear-gradient(
+      135deg,
+      #ff6268,
+      #ef454d
+    );
+
+  box-shadow:
+    0 12px 26px rgba(239, 69, 77, 0.18);
 }
 
 .complete-btn:hover {
-  background: #dc2626;
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.35);
+
+  box-shadow:
+    0 17px 32px rgba(239, 69, 77, 0.27);
+
+  filter: brightness(1.025);
 }
 
 .agent-actions button:active {
-  transform: scale(0.97);
+  transform: translateY(0);
 }
 
-/* ─────────────────────────────────────────
-   SHARED ANIMATION
-───────────────────────────────────────── */
-@keyframes borderGlow {
-  0%   { background-position: 0% 0%; }
-  100% { background-position: 300% 0%; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .agent-sidebar {
+    width: 250px;
+    min-width: 250px;
+
+    padding:
+      25px 18px;
+  }
+
+  .agent-top-header {
+    padding:
+      0 35px;
+  }
+
+  .agent-header-brand h1 {
+    font-size: 25px;
+  }
+
+  .agent-content {
+    padding:
+      30px 35px
+      40px;
+  }
+
+  .serving-card {
+    min-height: 220px;
+  }
+
+  .stat-card {
+    min-height: 145px;
+  }
+}
+
+
+@media (max-height: 760px) {
+
+  .agent-top-header {
+    height: 85px;
+    min-height: 85px;
+  }
+
+  .agent-logo {
+    width: 90px;
+    height: 85px;
+  }
+
+  .agent-content {
+    padding-top: 20px;
+    padding-bottom: 25px;
+  }
+
+  .serving-card {
+    min-height: 190px;
+  }
+
+  .serving-number {
+    font-size: 75px;
+  }
+
+  .agentstats-grid {
+    margin-top: 16px;
+  }
+
+  .stat-card {
+    min-height: 125px;
+  }
+
+  .stat-card span {
+    font-size: 45px;
+  }
+
+  .agent-actions {
+    margin-top: 16px;
+  }
+
+  .agent-actions button {
+    height: 62px;
+  }
+  /* =========================================================
+   AGENT TOAST
+   ========================================================= */
+
+.agent-toast {
+  position: fixed;
+
+  top: 25px;
+  right: 30px;
+
+  width: 390px;
+  min-height: 82px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 16px 18px;
+
+  border-radius: 17px;
+
+  background: rgba(225, 237, 247, 0.96);
+
+  border: 1px solid rgba(64, 111, 151, 0.25);
+
+  box-shadow:
+    0 18px 45px rgba(21, 52, 82, 0.2);
+
+  backdrop-filter: blur(18px);
+
+  z-index: 99999;
+
+  animation: agentToastIn 0.35s ease;
+}
+
+
+/* ICON */
+
+.agent-toast-icon {
+  width: 44px;
+  height: 44px;
+
+  min-width: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  color: white;
+
+  font-size: 23px;
+  font-weight: 900;
+}
+
+
+/* CONTENT */
+
+.agent-toast-content {
+  flex: 1;
+}
+
+.agent-toast-title {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #173b63;
+
+  font-size: 13px;
+  font-weight: 900;
+
+  letter-spacing: 0.5px;
+}
+
+.agent-toast-content p {
+  margin: 0;
+
+  color: #58728a;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  line-height: 1.4;
+}
+
+
+/* CLOSE */
+
+.agent-toast-close {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #7890a5;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.agent-toast-close:hover {
+  background: rgba(74, 105, 132, 0.1);
+}
+
+
+/* WARNING */
+
+.agent-toast.warning {
+  border-left: 5px solid #f0a323;
+}
+
+.agent-toast.warning .agent-toast-icon {
+  background:
+    linear-gradient(
+      135deg,
+      #f7b642,
+      #e99616
+    );
+
+  box-shadow:
+    0 6px 15px rgba(233, 150, 22, 0.22);
+}
+
+
+/* ERROR */
+
+.agent-toast.error {
+  border-left: 5px solid #e84e58;
+}
+
+.agent-toast.error .agent-toast-icon {
+  background:
+    linear-gradient(
+      135deg,
+      #f1646c,
+      #dd4049
+    );
+
+  box-shadow:
+    0 6px 15px rgba(221, 64, 73, 0.22);
+}
+
+
+/* SUCCESS */
+
+.agent-toast.success {
+  border-left: 5px solid #1fbd70;
+}
+
+.agent-toast.success .agent-toast-icon {
+  background:
+    linear-gradient(
+      135deg,
+      #35cf82,
+      #19ad63
+    );
+
+  box-shadow:
+    0 6px 15px rgba(25, 173, 99, 0.22);
+}
+
+
+/* ANIMATION */
+
+@keyframes agentToastIn {
+  from {
+    opacity: 0;
+    transform: translateX(35px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 }

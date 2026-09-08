@@ -1,188 +1,564 @@
+/* =========================================================
+   SMARTCARE HOSPITAL
+   AGENT LOGIN
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
 .agent-login-page {
+  position: relative;
+
+  width: 100%;
   min-height: 100vh;
 
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  padding: 20px;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+  color: #123d70;
+
+  background:
+    radial-gradient(
+      circle at 12% 18%,
+      rgba(52, 158, 238, 0.15),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 88% 82%,
+      rgba(20, 181, 169, 0.11),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #dff1ff 0%,
+      #eaf7ff 50%,
+      #dcefff 100%
+    );
+}
+
+
+/* =========================================================
+   BACKGROUND DECORATIONS
+========================================================= */
+
+.agent-login-circle {
+  position: absolute;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+.agent-login-circle-one {
+  width: 360px;
+  height: 360px;
+
+  top: -190px;
+  right: -110px;
+
+  background:
+    rgba(20, 121, 234, 0.065);
+}
+
+.agent-login-circle-two {
+  width: 400px;
+  height: 400px;
+
+  left: -230px;
+  bottom: -230px;
+
+  background:
+    rgba(18, 179, 166, 0.06);
+}
+
+.agent-login-dots {
+  position: absolute;
+
+  top: 11%;
+  right: 10%;
+
+  width: 100px;
+  height: 100px;
+
+  opacity: 0.38;
+
+  background-image:
+    radial-gradient(
+      #77b9ea 1.3px,
+      transparent 1.3px
+    );
+
+  background-size: 14px 14px;
+}
+
+
+/* =========================================================
+   LOGIN CARD
+========================================================= */
+
+.agent-login-card {
+  position: relative;
+  z-index: 2;
+
+  width: min(400px, 100%);
+
+  padding: 24px 28px 22px;
+
+  overflow: hidden;
+
+  border: 1px solid #b9d8ef;
+  border-radius: 22px;
 
   background:
     linear-gradient(
-      135deg,
-      #041c4a,
-      #0b2f7d
+      145deg,
+      rgba(221, 241, 255, 0.97),
+      rgba(207, 233, 252, 0.95)
     );
 
-  position: relative;
-  overflow: hidden;
-}
-
-.agent-login-card {
-  width: 450px;
-
-  padding: 40px;
-
-  border-radius: 30px;
-
-  position: relative;
-  overflow: hidden;
-
-  background: rgba(255,255,255,.08);
-
-  backdrop-filter: blur(25px);
-
-  border: 1px solid rgba(255,255,255,.15);
+  backdrop-filter: blur(20px);
 
   box-shadow:
-    0 0 40px rgba(59,130,246,.25);
+    0 22px 60px
+    rgba(38, 91, 139, 0.14);
 
   text-align: center;
-
-  z-index: 2;
 }
+
+
+/* Top accent */
 
 .agent-login-card::before {
   content: "";
 
   position: absolute;
 
-  inset: 0;
+  top: 0;
+  left: 50%;
 
-  border-radius: inherit;
+  width: 130px;
+  height: 3px;
 
-  padding: 2px;
+  transform: translateX(-50%);
+
+  border-radius:
+    0 0 10px 10px;
 
   background:
     linear-gradient(
       90deg,
-      transparent,
-      #ffd700,
-      #3b82f6,
-      transparent
+      #1479ea,
+      #16b3a8
     );
+}
 
-  background-size: 300% 300%;
 
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
+/* =========================================================
+   LOGO
+========================================================= */
 
-  -webkit-mask-composite: xor;
+.agent-login-logo-wrap {
+  height: 90px;
 
-  mask-composite: exclude;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  animation: loginBorderGlow 6s linear infinite;
+  margin-bottom: 2px;
+}
+
+.agent-login-logo {
+  display: block;
+
+  width: 220px;
+  height: 90px;
+
+  margin: 0;
+
+  object-fit: contain;
+
+  transform: scale(1.1);
+}
+
+
+/* =========================================================
+   BADGE
+========================================================= */
+
+.agent-login-badge {
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  margin: 0 auto 9px;
+  padding: 5px 10px;
+
+  border: 1px solid #acd3f0;
+  border-radius: 30px;
+
+  background: #d4ecfd;
+
+  color: #1479ea;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  letter-spacing: 1.3px;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.agent-login-title {
+  margin: 0;
+
+  color: #111111;
+
+  background: none;
+
+  font-size: 25px;
+  line-height: 1.1;
+
+  font-weight: 800;
+
+  letter-spacing: -0.6px;
+
+  -webkit-background-clip: initial;
+  background-clip: initial;
+
+  -webkit-text-fill-color: #111111;
+}
+
+.agent-login-subtitle {
+  max-width: 300px;
+
+  margin: 6px auto 17px;
+
+  color: #587895;
+
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   FIELDS
+========================================================= */
+
+.agent-login-field {
+  margin-bottom: 11px;
+
+  text-align: left;
+}
+
+.agent-login-field label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #315b7d;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   INPUT WRAPPER
+========================================================= */
+
+.agent-login-input-wrap {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+}
+
+.agent-login-input-icon {
+  position: absolute;
+
+  left: 12px;
+
+  z-index: 2;
+
+  color: #5684aa;
+
+  font-size: 14px;
 
   pointer-events: none;
 }
 
-@keyframes loginBorderGlow {
-  0% {
-    background-position: 0% 50%;
-  }
 
-  100% {
-    background-position: 300% 50%;
-  }
-}
+/* =========================================================
+   INPUT
+========================================================= */
 
-.login-logo {
-  width: 120px;
-
-  margin-bottom: 20px;
-
-  filter:
-    drop-shadow(
-      0 0 20px rgba(255,215,0,.35)
-    );
-
-  margin-left: 110px;  
-}
-
-.login-title {
-  font-size: 2.5rem;
-
-  margin-bottom: 10px;
-
-  background:
-    linear-gradient(
-      90deg,
-      #2563eb,
-      #ffffff,
-      #facc15
-    );
-
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.login-subtitle {
-  color: rgba(255,255,255,.8);
-
-  margin-bottom: 30px;
-}
-
-
-.login-input {
+.agent-login-input {
   width: 100%;
+  height: 43px;
 
-  padding: 15px;
+  margin: 0;
 
-  margin-bottom: 15px;
+  padding:
+    0 42px
+    0 37px;
 
-  border-radius: 15px;
+  outline: none;
 
-  border: 1px solid rgba(255,255,255,.15);
+  border: 1px solid #acd0eb;
+  border-radius: 10px;
 
-  background: rgba(255,255,255,.08);
+  background: #d5ebfb;
 
-  color: white;
+  color: #173f67;
 
-  font-size: 1rem;
+  font-family: inherit;
+
+  font-size: 10px;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.login-input::placeholder {
-  color: rgba(255,255,255,.6);
+.agent-login-input::placeholder {
+  color: #7692aa;
+}
+
+.agent-login-input:hover {
+  border-color: #83bae4;
+
+  background: #d0e8fa;
+}
+
+.agent-login-input:focus {
+  border-color: #4b9fe1;
+
+  background: #dff1ff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(20, 121, 234, 0.09);
 }
 
 
-.login-btn {
-  width: 100%;
+/* =========================================================
+   PASSWORD EYE
+========================================================= */
 
-  padding: 16px;
+.agent-password-eye {
+  position: absolute;
 
-  border: none;
+  right: 7px;
 
-  border-radius: 15px;
+  width: 31px;
+  height: 31px;
 
-  background: #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  color: white;
+  padding: 0;
 
-  font-size: 1.1rem;
-  font-weight: bold;
+  border: 0;
+  border-radius: 8px;
+
+  background: #c4e1f6;
+
+  color: #527fa3;
+
+  font-size: 15px;
 
   cursor: pointer;
 
-  transition: .25s;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
-.login-btn:hover {
-  transform: translateY(-2px);
+.agent-password-eye:hover {
+  color: #1479ea;
+
+  background: #b4d9f4;
+}
+
+.agent-password-eye:active {
+  transform: scale(0.94);
+}
+
+.agent-password-eye:focus-visible {
+  outline: 2px solid #65afea;
+
+  outline-offset: 1px;
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+========================================================= */
+
+.agent-login-btn {
+  width: 100%;
+  height: 43px;
+
+  margin-top: 5px;
+  padding: 0;
+
+  border: 0;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1479ea 0%,
+      #168bea 52%,
+      #0ca8ae 100%
+    );
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  cursor: pointer;
 
   box-shadow:
-    0 10px 25px rgba(34,197,94,.35);
+    0 8px 20px
+    rgba(20, 121, 234, 0.2);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.agent-login-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 11px 25px
+    rgba(20, 121, 234, 0.27);
+}
+
+.agent-login-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.agent-login-btn:disabled {
+  opacity: 0.65;
+
+  cursor: wait;
 }
 
 
-.login-bg-logo {
+/* =========================================================
+   SECURITY MESSAGE
+========================================================= */
+
+.agent-login-security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 13px;
+
+  color: #64829c;
+
+  font-size: 7px;
+}
+
+.agent-login-security svg {
+  flex-shrink: 0;
+
+  color: #0fa69c;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.agent-login-footer {
   position: absolute;
 
-  width: 900px;
-
-  opacity: .05;
-
   left: 50%;
-  top: 50%;
+  bottom: 17px;
 
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+
+  color: #6686a1;
+
+  font-size: 7px;
+  font-weight: 600;
+
+  letter-spacing: 0.6px;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 520px) {
+
+  .agent-login-page {
+    padding: 15px;
+  }
+
+  .agent-login-card {
+    padding: 22px 20px 20px;
+
+    border-radius: 18px;
+  }
+
+  .agent-login-logo-wrap {
+    height: 78px;
+  }
+
+  .agent-login-logo {
+    width: 190px;
+    height: 78px;
+  }
+
+  .agent-login-title {
+    font-size: 23px;
+  }
+
+  .agent-login-footer {
+    bottom: 10px;
+
+    font-size: 6px;
+  }
 }

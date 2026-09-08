@@ -22,7 +22,7 @@ public class JwtService : IJwtService
     string role,
     Guid? branchId,
     Guid? counterId)
-    
+
     {
        var claims = new List<Claim>
         {
@@ -47,9 +47,22 @@ public class JwtService : IJwtService
                 counterId.Value.ToString()));
             }
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(
-                _configuration["Jwt:Key"]!));
+
+
+        // var key = new SymmetricSecurityKey(
+        //     Encoding.UTF8.GetBytes(
+        //         _configuration["Jwt:Key"]!));
+        var jwtKey = _configuration["Jwt:Key"];
+
+Console.WriteLine($"JWT KEY LENGTH: {jwtKey?.Length}");
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException("Jwt:Key is missing.");
+}
+
+var key = new SymmetricSecurityKey(
+    Encoding.UTF8.GetBytes(jwtKey));
 
         var creds = new SigningCredentials(
             key,

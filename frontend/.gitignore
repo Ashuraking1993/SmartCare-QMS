@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# .NET
+**/bin/
+**/obj/
+.vs/
+*.user
+
+# Secrets
+.env
+.env.*
+appsettings.Development.json

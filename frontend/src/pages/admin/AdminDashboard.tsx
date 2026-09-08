@@ -148,11 +148,18 @@ export default function AdminDashboard() {
 
       {/* ── Sidebar ── */}
       <aside className="adm-sidebar">
-        <div className="adm-sidebar-brand">
-          <p className="adm-brand-title">QSmart Admin</p>
-          <small className="adm-brand-sub">BANKO DE FILIPINO</small>
-        </div>
+              <div className="adm-sidebar-brand">
+          <img
+            src={logo}
+            alt="SmartCare Hospital"
+            className="adm-sidebar-logo"
+          />
 
+          <div className="adm-brand-info">
+            <strong>ADMIN PORTAL</strong>
+            <span>Smart Queue Management</span>
+          </div>
+        </div>
         <nav className="adm-nav">
           <span className="adm-nav-group">Main</span>
           <div className="adm-nav-item adm-nav-active" onClick={() => navigate("/admin/dashboard")}>

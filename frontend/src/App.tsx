@@ -7,11 +7,13 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import QueueMonitoringPage from "./pages/admin/QueueMonitoringPage";
 import UserManagementPage from "./pages/admin/UserManagementPage";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/kiosk" element={<Kiosk />} />
         <Route path="/display" element={<Display />} />
         <Route path="/agent" element={<Agent />} />
