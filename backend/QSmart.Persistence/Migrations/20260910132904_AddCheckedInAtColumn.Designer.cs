@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QSmart.Persistence.Context;
@@ -11,9 +12,11 @@ using QSmart.Persistence.Context;
 namespace QSmart.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260910132904_AddCheckedInAtColumn")]
+    partial class AddCheckedInAtColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,14 +169,9 @@ namespace QSmart.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
-
-                    b.HasIndex("ServiceId");
 
                     b.ToTable("Counters");
 
@@ -183,48 +181,7 @@ namespace QSmart.Persistence.Migrations
                             Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
                             BranchId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                             IsActive = true,
-                            Name = "General Consultation",
-                            ServiceId = new Guid("10000000-0000-0000-0000-000000000001")
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"),
-                            BranchId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                            IsActive = true,
-                            Name = "Emergency",
-                            ServiceId = new Guid("10000000-0000-0000-0000-000000000002")
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3"),
-                            BranchId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                            IsActive = true,
-                            Name = "Specialist",
-                            ServiceId = new Guid("10000000-0000-0000-0000-000000000003")
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4"),
-                            BranchId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                            IsActive = true,
-                            Name = "Laboratory",
-                            ServiceId = new Guid("10000000-0000-0000-0000-000000000004")
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb5"),
-                            BranchId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                            IsActive = true,
-                            Name = "Dental Care",
-                            ServiceId = new Guid("10000000-0000-0000-0000-000000000005")
-                        },
-                        new
-                        {
-                            Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6"),
-                            BranchId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                            IsActive = true,
-                            Name = "Other Services",
-                            ServiceId = new Guid("10000000-0000-0000-0000-000000000006")
+                            Name = "Counter 1"
                         });
                 });
 
@@ -583,15 +540,7 @@ namespace QSmart.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QSmart.Domain.Entities.QueueService", "Service")
-                        .WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Branch");
-
-                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("QSmart.Domain.Entities.Doctor", b =>

@@ -111,6 +111,108 @@ public class AuthController : ControllerBase
     
     }
 
+    [HttpPost("create-demo-agents")]
+public async Task<IActionResult> CreateDemoAgents()
+{
+    var tellerRoleId =
+        Guid.Parse(
+            "33333333-3333-3333-3333-333333333333");
+
+    var branchId =
+        Guid.Parse(
+            "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+    var agents = new[]
+    {
+        new
+        {
+            FirstName = "Specialist",
+            LastName = "Agent",
+            Email = "specialist@smartcare.com",
+            CounterId = Guid.Parse(
+                "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3")
+        },
+        new
+        {
+            FirstName = "Laboratory",
+            LastName = "Agent",
+            Email = "laboratory@smartcare.com",
+            CounterId = Guid.Parse(
+                "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4")
+        },
+        new
+        {
+            FirstName = "Dental",
+            LastName = "Agent",
+            Email = "dental@smartcare.com",
+            CounterId = Guid.Parse(
+                "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb5")
+        },
+        new
+        {
+            FirstName = "Other",
+            LastName = "Services",
+            Email = "other@smartcare.com",
+            CounterId = Guid.Parse(
+                "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6")
+        }
+    };
+
+    foreach (var agent in agents)
+    {
+        var existing =
+            await _userRepository
+                .GetByEmailAsync(agent.Email);
+
+        if (existing != null)
+        {
+            continue;
+        }
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+
+            FirstName =
+                agent.FirstName,
+
+            LastName =
+                agent.LastName,
+
+            Email =
+                agent.Email,
+
+            PasswordHash =
+                _passwordHasher.Hash(
+                    "Agent123!"),
+
+            RoleId =
+                tellerRoleId,
+
+            BranchId =
+                branchId,
+
+            CounterId =
+                agent.CounterId,
+
+            CreatedAt =
+                DateTime.UtcNow
+        };
+
+        await _userRepository
+            .AddAsync(user);
+    }
+
+    await _userRepository
+        .SaveChangesAsync();
+
+    return Ok(new
+    {
+        message =
+            "Demo department agents created."
+    });
+}
+
     [HttpPost("reset-admin")]
     public async Task<IActionResult> ResetAdminPassword()
     {

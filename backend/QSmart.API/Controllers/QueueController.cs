@@ -12,14 +12,17 @@ namespace QSmart.API.Controllers;
 public class QueueController : ControllerBase
 {
    private readonly IQueueRepository _queueRepository;
+   private readonly ICounterRepository _counterRepository;
     private readonly IQueuePredictionService _queuePredictionService;
 
-    public QueueController(
+  public QueueController(
     IQueueRepository queueRepository,
-    IQueuePredictionService queuePredictionService)
+    IQueuePredictionService queuePredictionService,
+    ICounterRepository counterRepository)
 {
     _queueRepository = queueRepository;
     _queuePredictionService = queuePredictionService;
+    _counterRepository = counterRepository;
 }
 
     // =====================================================
@@ -261,11 +264,14 @@ public class QueueController : ControllerBase
             waitingSince =
                 ticket.CreatedAt,
 
-            calledAt =
+             calledAt =
                 ticket.CalledAt,
 
+            checkedInAt =
+                ticket.CheckedInAt,
+
             liveQueue =
-                liveQueue.Select(x => new
+            liveQueue.Select(x => new
                 {
                     ticketNumber =
                         x.TicketNumber,
@@ -275,6 +281,87 @@ public class QueueController : ControllerBase
                 })
         });
     }
+
+
+    // =====================================================
+// MOBILE PATIENT - CHECK IN
+// =====================================================
+
+[Authorize(Roles = "Patient")]
+[HttpPost("check-in")]
+public async Task<IActionResult> CheckIn()
+{
+    var userId = GetCurrentUserId();
+
+    if (userId == null)
+    {
+        return Unauthorized();
+    }
+
+    var ticket =
+        await _queueRepository
+            .GetActiveTicketByUserAsync(
+                userId.Value);
+
+    if (ticket == null)
+    {
+        return NotFound(new
+        {
+            message =
+                "You do not have an active queue."
+        });
+    }
+
+    // Only waiting patients can check in.
+    if (!string.Equals(
+            ticket.Status,
+            "Waiting",
+            StringComparison.OrdinalIgnoreCase))
+    {
+        return BadRequest(new
+        {
+            message =
+                "Only waiting patients can check in."
+        });
+    }
+
+    // Prevent duplicate check-in.
+    if (ticket.CheckedInAt.HasValue)
+    {
+        return Ok(new
+        {
+            message =
+                "You are already checked in.",
+
+            ticketNumber =
+                ticket.TicketNumber,
+
+            checkedInAt =
+                ticket.CheckedInAt
+        });
+    }
+
+    ticket.CheckedInAt =
+        DateTime.UtcNow;
+
+    await _queueRepository
+        .SaveChangesAsync();
+
+    return Ok(new
+    {
+        message =
+            "Check-in successful.",
+
+        ticketNumber =
+            ticket.TicketNumber,
+
+        status =
+            ticket.Status,
+
+        checkedInAt =
+            ticket.CheckedInAt
+    });
+}
 
     // =====================================================
 // MOBILE PATIENT - QUEUE PREDICTION
@@ -395,16 +482,28 @@ public async Task<IActionResult> Next()
         });
     }
 
-    if (!Guid.TryParse(
-            counterIdClaim,
-            out var counterId))
-    {
-        return Unauthorized(new
+            if (!Guid.TryParse(
+                    counterIdClaim,
+                    out var counterId))
+            {
+                return Unauthorized(new
+                {
+                    message =
+                        "Invalid counter assignment."
+                });
+            }
+
+            var counter =
+            await _counterRepository
+                .GetByIdAsync(counterId);
+
+        if (counter == null)
         {
-            message =
-                "Invalid counter assignment."
-        });
-    }
+            return NotFound(new
+            {
+                message = "Assigned department was not found."
+            });
+        }
 
     // IMPORTANT:
     // One counter can only serve one ticket at a time.
@@ -426,9 +525,11 @@ public async Task<IActionResult> Next()
     }
 
     // Get next waiting patient.
-    var ticket =
-        await _queueRepository
-            .GetNextWaitingTicketAsync();
+   var ticket =
+    await _queueRepository
+        .GetNextWaitingTicketAsync(
+            counter.BranchId,
+            counter.ServiceId);
 
     if (ticket == null)
     {
@@ -567,6 +668,11 @@ public async Task<IActionResult> Dashboard()
             .GetCurrentServingByCounterAsync(
                 counterId);
 
+    var counters =
+    await _counterRepository
+        .GetAllAsync();
+
+        
     var waiting =
         await _queueRepository
             .GetWaitingCountAsync();
@@ -657,33 +763,62 @@ public async Task<IActionResult> Dashboard()
     // PUBLIC QUEUE DISPLAY
     // =====================================================
 
-    [HttpGet("display")]
-    public async Task<IActionResult> Display()
-    {
-        var serving =
-            await _queueRepository
-                .GetServingTicketsAsync();
-
-        var upNext =
-            await _queueRepository
-                .GetUpNextTicketsAsync();
-
-        var waiting =
-            await _queueRepository
-                .GetWaitingCountAsync();
-
-        return Ok(new
+   [HttpGet("display")]
+        public async Task<IActionResult> Display()
         {
-            serving =
-                serving.Select(x => new
-                {
-                    x.CounterId,
-                    x.TicketNumber
-                }),
+            var serving =
+                await _queueRepository
+                    .GetServingTicketsAsync();
+
+            var counters =
+                await _counterRepository
+                    .GetAllAsync();
+
+            var upNext =
+                await _queueRepository
+                    .GetUpNextTicketsAsync();
+
+            var waiting =
+                await _queueRepository
+                    .GetWaitingCountAsync();
+
+            return Ok(new
+            {
+                serving =
+            serving.Select(x => new
+            {
+                x.CounterId,
+                x.TicketNumber,
+
+                departmentName =
+                    counters
+                        .FirstOrDefault(c =>
+                            c.Id == x.CounterId)
+                        ?.Name
+                        ?? "Hospital Department"
+            }),
 
             upNext =
-                upNext.Select(
-                    x => x.TicketNumber),
+                upNext.Select((x, index) => new
+                {
+                    ticketNumber =
+                        x.TicketNumber,
+
+                    checkedIn =
+                        x.CheckedInAt.HasValue,
+
+                        
+
+                    checkedInAt =
+                        x.CheckedInAt,
+
+                    queueState =
+                        index == 0 && x.CheckedInAt.HasValue
+                            ? "READY"
+                            : x.CheckedInAt.HasValue
+                                ? "CHECKED IN"
+                                : "NOT ARRIVED"
+                }),
 
             waitingCount =
                 waiting

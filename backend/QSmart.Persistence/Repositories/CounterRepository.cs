@@ -22,10 +22,11 @@ public class CounterRepository : ICounterRepository
                 .ToListAsync();
         }
 
-        public async Task<Counter?> GetByIdAsync(Guid id)
+         public async Task<Counter?> GetByIdAsync(Guid id)
         {
             return await _context.Counters
                 .Include(x => x.Branch)
+                .Include(x => x.Service)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 

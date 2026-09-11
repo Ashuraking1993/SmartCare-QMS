@@ -12,6 +12,10 @@ public class Counter
 
     public Branch? Branch { get; set; }
 
+    public Guid ServiceId { get; set; }
+
+    public QueueService? Service { get; set; }
+
     public ICollection<QueueTicket> QueueTickets { get; set; }
         = new List<QueueTicket>();
 }

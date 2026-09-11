@@ -55,10 +55,17 @@ public class AppDbContext : DbContext
         .WithMany(x => x.Users)
         .HasForeignKey(x => x.RoleId);
 
-        modelBuilder.Entity<Counter>()
+    modelBuilder.Entity<Counter>()
         .HasOne(x => x.Branch)
         .WithMany(x => x.Counters)
-        .HasForeignKey(x => x.BranchId);
+        .HasForeignKey(x => x.BranchId);   
+
+    modelBuilder.Entity<Counter>()
+    .HasOne(x => x.Service)
+    .WithMany()
+    .HasForeignKey(x => x.ServiceId)
+    .OnDelete(DeleteBehavior.NoAction);
+
 
     modelBuilder.Entity<QueueTicket>()
     .HasOne(x => x.Counter)
@@ -71,6 +78,11 @@ public class AppDbContext : DbContext
     .WithMany()
     .HasForeignKey(x => x.UserId)
     .OnDelete(DeleteBehavior.SetNull);
+
+    modelBuilder.Entity<Counter>()
+    .HasOne(x => x.Branch)
+    .WithMany(x => x.Counters)
+    .HasForeignKey(x => x.BranchId);
 
     modelBuilder.Entity<QueueTicket>()
         .HasOne(x => x.Branch)
@@ -119,14 +131,68 @@ public class AppDbContext : DbContext
             ContactNumber = "Demo Contact"
         });
 
-    modelBuilder.Entity<Counter>().HasData(
-        new Counter
-        {
+   modelBuilder.Entity<Counter>().HasData(
+
+    // GENERAL CONSULTATION
+    new Counter
+    {
         Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
-        Name = "Counter 1",
+        Name = "General Consultation",
         BranchId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        ServiceId = Guid.Parse("10000000-0000-0000-0000-000000000001"),
         IsActive = true
-    });
+    },
+
+    // EMERGENCY
+    new Counter
+    {
+        Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"),
+        Name = "Emergency",
+        BranchId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        ServiceId = Guid.Parse("10000000-0000-0000-0000-000000000002"),
+        IsActive = true
+    },
+
+    // SPECIALIST
+    new Counter
+    {
+        Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3"),
+        Name = "Specialist",
+        BranchId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        ServiceId = Guid.Parse("10000000-0000-0000-0000-000000000003"),
+        IsActive = true
+    },
+
+    // LABORATORY
+    new Counter
+    {
+        Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4"),
+        Name = "Laboratory",
+        BranchId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        ServiceId = Guid.Parse("10000000-0000-0000-0000-000000000004"),
+        IsActive = true
+    },
+
+    // DENTAL CARE
+    new Counter
+    {
+        Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb5"),
+        Name = "Dental Care",
+        BranchId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        ServiceId = Guid.Parse("10000000-0000-0000-0000-000000000005"),
+        IsActive = true
+    },
+
+    // OTHER SERVICES
+    new Counter
+    {
+        Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6"),
+        Name = "Other Services",
+        BranchId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        ServiceId = Guid.Parse("10000000-0000-0000-0000-000000000006"),
+        IsActive = true
+    }
+);
 
     // ================= QUEUE SERVICES =================
 

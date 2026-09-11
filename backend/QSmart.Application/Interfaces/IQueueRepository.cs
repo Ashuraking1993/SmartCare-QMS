@@ -12,7 +12,9 @@ public interface IQueueRepository
 
     Task SaveChangesAsync();
 
-    Task<QueueTicket?> GetNextWaitingTicketAsync();
+    Task<QueueTicket?> GetNextWaitingTicketAsync(
+    Guid branchId,
+    Guid serviceId);
 
     Task<QueueTicket?> GetByTicketNumberAsync(
     string ticketNumber);

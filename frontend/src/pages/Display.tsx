@@ -2,11 +2,18 @@ import "./styles/Display.css";
 import logo from "../assets/logo.png";
 import { useState, useEffect } from "react";
 
+
+type UpNextTicket = {
+  ticketNumber: string;
+  checkedIn: boolean;
+  checkedInAt: string | null;
+  queueState: "READY" | "CHECKED IN" | "NOT ARRIVED";
+};
 export default function Display() {
   const [currentTime, setCurrentTime] = useState("");
 
   const [serving, setServing] = useState<any[]>([]);
-  const [upNext, setUpNext] = useState<string[]>([]);
+  const [upNext, setUpNext] = useState<UpNextTicket[]>([]);
   const [waitingCount, setWaitingCount] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
@@ -153,9 +160,9 @@ export default function Display() {
                   key={index}
                   className="counter-card"
                 >
-                  <p className="counter-label">
-                    COUNTER {index + 1}
-                  </p>
+                 <p className="counter-label">
+                {item.departmentName?.toUpperCase() ?? "HOSPITAL DEPARTMENT"}
+              </p>
 
                   <div className="ticket-number">
                     {item.ticketNumber}
@@ -202,29 +209,43 @@ export default function Display() {
           </div>
 
           <div className="upnext-list">
+          {upNext.length > 0 ? (
+            upNext.map((ticket, index) => (
+              <div
+                key={ticket.ticketNumber}
+                className="upnext-item"
+              >
+                <span className="upnext-position">
+                  {index + 1}
+                </span>
 
-            {upNext.length > 0 ? (
-              upNext.map((ticket, index) => (
-                <div
-                  key={index}
-                  className="upnext-item"
+                <strong>
+                  {ticket.ticketNumber}
+                </strong>
+
+                <span
+                  className={`queue-indicator ${
+                    ticket.queueState === "READY"
+                      ? "queue-ready"
+                      : ticket.queueState === "CHECKED IN"
+                        ? "queue-checked"
+                        : "queue-not-arrived"
+                  }`}
                 >
-                  <span className="upnext-position">
-                    {index + 1}
-                  </span>
-
-                  <strong>
-                    {ticket}
-                  </strong>
-                </div>
-              ))
-            ) : (
-              <div className="upnext-item empty-next">
-                No patients waiting
+                  {ticket.queueState === "READY"
+                    ? "● READY"
+                    : ticket.queueState === "CHECKED IN"
+                      ? "✓ CHECKED IN"
+                      : "○ NOT ARRIVED"}
+                </span>
               </div>
-            )}
-
-          </div>
+            ))
+          ) : (
+            <div className="upnext-item empty-next">
+              No patients waiting
+            </div>
+          )}
+        </div>
 
         </div>
 

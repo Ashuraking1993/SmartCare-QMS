@@ -507,10 +507,64 @@
 
 .empty-next {
   justify-content: center;
-
   font-size: 12px;
-
   color: #8298b2;
+  min-width: 72px;
+}
+
+
+/* =====================================================
+   QUEUE ARRIVAL INDICATORS
+===================================================== */
+
+.queue-indicator {
+  margin-left: auto;
+
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 88px;
+
+  padding: 6px 9px;
+
+  border-radius: 20px;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 0.5px;
+
+  white-space: nowrap;
+}
+
+/* NEXT PATIENT + CHECKED IN */
+.queue-ready {
+  color: #07856f;
+
+  background: #e5f8f3;
+
+  border: 1px solid #bdebe0;
+}
+
+/* CHECKED IN BUT NOT YET NEXT */
+.queue-checked {
+  color: #1479ea;
+
+  background: #e8f3ff;
+
+  border: 1px solid #c8e1fb;
+}
+
+/* PATIENT NOT YET AT CLINIC */
+.queue-not-arrived {
+  color: #d64545;
+
+  background: #fff0f0;
+
+  border: 1px solid #f3c5c5;
 }
 
 

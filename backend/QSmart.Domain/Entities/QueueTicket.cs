@@ -30,6 +30,8 @@ public class QueueTicket
 
     public DateTime? CancelledAt { get; set; }
 
+    public DateTime? CheckedInAt { get; set; }
+
     public int Number { get; set; }
 
     public Guid ServiceId { get; set; }

@@ -36,54 +36,20 @@ public class QueueRepository : IQueueRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<QueueTicket?> GetNextWaitingTicketAsync()
-    {
-        QueueTicket? ticket = null;
-
-        // Every 3rd ticket, try priority first
-        if (_normalServeCount >= 2)
-        {
-            ticket = await _context.QueueTickets
-                .Include(x => x.Service)
-                .Where(x =>
-                    x.Status == "Waiting" &&
-                    x.Service!.IsPriority)
-                .OrderBy(x => x.CreatedAt)
-                .FirstOrDefaultAsync();
-
-            if (ticket != null)
-            {
-                _normalServeCount = 0;
-                return ticket;
-            }
-        }
-
-        // Get normal ticket
-        ticket = await _context.QueueTickets
-            .Include(x => x.Service)
-            .Where(x =>
-                x.Status == "Waiting" &&
-                !x.Service!.IsPriority)
-            .OrderBy(x => x.CreatedAt)
-            .FirstOrDefaultAsync();
-
-        // If no normal ticket exists, get ANY waiting ticket
-        if (ticket == null)
-        {
-            ticket = await _context.QueueTickets
-                .Include(x => x.Service)
-                .Where(x => x.Status == "Waiting")
-                .OrderBy(x => x.CreatedAt)
-                .FirstOrDefaultAsync();
-        }
-
-        if (ticket != null)
-        {
-            _normalServeCount++;
-        }
-
-        return ticket;
-    }
+public async Task<QueueTicket?> GetNextWaitingTicketAsync(
+    Guid branchId,
+    Guid serviceId)
+{
+    return await _context.QueueTickets
+        .Include(x => x.Service)
+        .Where(x =>
+            x.BranchId == branchId &&
+            x.ServiceId == serviceId &&
+            x.Status == "Waiting" &&
+            x.CheckedInAt != null)
+        .OrderBy(x => x.CreatedAt)
+        .FirstOrDefaultAsync();
+}
 
     public async Task<QueueTicket?> GetByTicketNumberAsync(
         string ticketNumber)
